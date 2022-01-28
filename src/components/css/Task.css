@@ -1,0 +1,11 @@
+ul.task{
+    list-style-type: none;
+}
+li.taskWrapper{
+    margin-bottom: 10px;
+}
+.completed{
+    text-decoration: line-through;
+    color: green;
+}
+
