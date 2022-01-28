@@ -2,8 +2,20 @@ ul{
     text-align: left;
 }
 
+button{
+    cursor:pointer;
+    margin: 5px;
+}
 
 .menu{
     text-align: left;
     padding: 10px;
+    display: flex;
+    flex-direction: column;
+    width: 50vh;
+}
+
+.menu button{
+    cursor:pointer;
+    min-width: 100px;
 }

@@ -5,18 +5,26 @@ import "./css/TaskList.css";
 export default class TaskList extends PureComponent {
   constructor(props) {
     super(props);
-    this.state = { tasks: [] };
+    // Для вывода отфильтрованных значений используется массив tasks
+    // Для хранения значений используется массив storedData
+    // При сокращении строки поиска данные берутся из storedData -> поиск обратимый
+    // Добавления /удаления / изменения элементов дублируются в tasks и storedData 
+    // Это позволяет искать по новым / измененным элементам
+    this.state = { tasks: [], storedData: []};
     this.inputRef = React.createRef();
+    this.searchRef = React.createRef();
+
     this.addTask = this.addTask.bind(this);
     this.remTask = this.remTask.bind(this);
     this.updateTask = this.updateTask.bind(this);
+    this.searchTask = this.searchTask.bind(this);
   }
   componentDidMount() {
     fetch("https://jsonplaceholder.typicode.com/todos")
       .then((data) => data.json())
       .then((data) => {
         data = data.slice(0, 7);
-        this.setState({ tasks: data });
+        this.setState({ tasks: data , storedData: data});
       });
   }
 
@@ -24,7 +32,7 @@ export default class TaskList extends PureComponent {
     return (
       <div>
         <ul>
-          {this.state?.tasks?.map((task) => (
+          {this.state.tasks?.map((task) => (
             <Task key={task.id} {...task} clickHandler={this.updateTask}/>
           ))}
         </ul>
@@ -35,6 +43,8 @@ export default class TaskList extends PureComponent {
             <button onClick={this.addTask}>Добавить</button>
           </div>
           <button onClick={this.remTask}>Удалить последнюю задачу</button>
+          <label htmlFor="searchInput">Поиск задачи: </label>
+          <input id="searchInput" type="text" placeholder="" onChange={this.searchTask}></input>
         </div>
       </div>
     );
@@ -45,24 +55,40 @@ export default class TaskList extends PureComponent {
       this.inputRef.current.focus();
       return;
     }
-    this.setState((prevState) => ({
-      tasks: [
+    this.setState((prevState) => {
+      const newValue =  [
         ...prevState.tasks,
         { id: prevState.tasks.length + 1, title, completed: false },
-      ],
-    }));
+      ];
+     return {
+      tasks: [...newValue],
+      storedData: [...newValue]
+    }});
     this.inputRef.current.value = "";
   }
 
   remTask() {
-    this.setState((prevState) => ({
-      tasks: prevState.tasks.slice(0, prevState.tasks.length - 1),
-    }));
+    this.setState((prevState) => {
+      const newValue = prevState.tasks.slice(0, prevState.tasks.length - 1);
+      return {
+        tasks: [...newValue],
+        storedData: [...newValue],
+    }});
   }
 
   updateTask(id) {
-    this.setState((prevState) => ({
-        tasks: prevState.tasks.map(task => task.id === id? {...task, completed: !task.completed} : task),
+    this.setState((prevState) => {
+      const newValue = prevState.tasks.map(task => task.id === id? {...task, completed: !task.completed} : task)
+      return  {
+        tasks: [...newValue],
+        storedData: [...newValue],
+    }});
+  }
+
+  searchTask(e){
+      const find = e.target.value?.toLowerCase();
+      this.setState((prevState) => ({
+        tasks: prevState.storedData.filter(task => task.title?.toLowerCase().includes(find)),
       }));
   }
 }
